@@ -59,7 +59,7 @@ export default function App() {
   return (
     <>
       <div className="app-container">
-        {/* Audio Toggle — right-center */}
+        {/* Audio Toggle — top-right */}
         <button
           className="audio-toggle-btn"
           onClick={toggleAudio}
