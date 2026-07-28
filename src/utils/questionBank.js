@@ -3,7 +3,7 @@
 // Singapore MOE Primary 1 Aligned
 // ──────────────────────────────────────────────────
 
-const sgNames = ['Wei Ming','Priya','Raju','Ahmad','Mia','Jun','Siti','Ryan','Xiao Ling','Aisha'];
+const sgNames = ['Alex','Priya','Raju','Ahmad','Mia','Jun','Siti','Ryan','Xiao Ling','Aisha'];
 const femaleNames = ['Priya','Mia','Siti','Xiao Ling','Aisha'];
 const objects = ['cupcakes','balloons','stickers','marbles','apples','cookies','mangoes','erasers','books','sweets'];
 const containers = ['plate','bag','box','basket','table','tray'];

@@ -1,41 +1,62 @@
 import { useState, useEffect, useCallback } from 'react';
+import { playClick, playSuccess, playError } from '../utils/soundEffects';
+import { narrate } from '../utils/audio';
+import { getSimulateIntro } from '../utils/narration';
+
 const STATIONS = [
   { icon: '📐', label: 'Build' },
-  { icon: '📥', label: 'Sort' },
+  { icon: '✖️', label: 'Formula' },
   { icon: '🔢', label: 'Count' }
 ];
 
-// ===========================
-// Station 1: Build-a-Shape (3 rounds: triangle, square, pentagon)
-// ===========================
+// ─────────────────────────────────────────────
+// Shared: Hint Popup
+// ─────────────────────────────────────────────
+function HintPopup({ hint, onClose }) {
+  return (
+    <div className="popup-overlay" role="dialog" aria-modal="true">
+      <div className="popup-card">
+        <div className="popup-icon">💡</div>
+        <h3 className="popup-title">Here's a Hint!</h3>
+        <div className="hint-popup-box">
+          <p>{hint}</p>
+        </div>
+        <div className="popup-actions">
+          <button className="btn btn-primary btn-sm" onClick={onClose} id="sim-hint-close-btn">
+            Got it! ✓
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// Station 1: Build-a-Square (3 rounds)
+// ─────────────────────────────────────────────
 const BUILD_ROUNDS = [
   {
-    label: 'Triangle',
-    emoji: '🔺',
-    dots: [{ cx: 100, cy: 25 }, { cx: 25, cy: 160 }, { cx: 175, cy: 160 }],
+    label: 'Side = 1', side: 1, area: 1, emoji: '🟦',
+    dots: [{ cx: 70, cy: 70 }, { cx: 130, cy: 70 }, { cx: 130, cy: 130 }, { cx: 70, cy: 130 }],
+    hint: 'Tap the glowing dot to connect the corners one by one. Start from dot 1!'
   },
   {
-    label: 'Square',
-    emoji: '🟦',
-    dots: [{ cx: 40, cy: 40 }, { cx: 160, cy: 40 }, { cx: 160, cy: 160 }, { cx: 40, cy: 160 }],
+    label: 'Side = 2', side: 2, area: 4, emoji: '🟦',
+    dots: [{ cx: 50, cy: 50 }, { cx: 150, cy: 50 }, { cx: 150, cy: 150 }, { cx: 50, cy: 150 }],
+    hint: 'Connect all 4 corners in order. The sides will appear as you tap each dot!'
   },
   {
-    label: 'Pentagon',
-    emoji: '⬠',
-    dots: [
-      { cx: 100, cy: 25 },
-      { cx: 175, cy: 80 },
-      { cx: 148, cy: 170 },
-      { cx: 52, cy: 170 },
-      { cx: 25, cy: 80 },
-    ],
-  }
+    label: 'Side = 3', side: 3, area: 9, emoji: '🟦',
+    dots: [{ cx: 30, cy: 30 }, { cx: 170, cy: 30 }, { cx: 170, cy: 170 }, { cx: 30, cy: 170 }],
+    hint: 'Tap dots 1 → 2 → 3 → 4 in order to draw the square. Area = Side × Side!'
+  },
 ];
 
 function Station1({ audioEnabled, onNext }) {
   const [round, setRound] = useState(0);
   const [dotsClicked, setDotsClicked] = useState(0);
   const [complete, setComplete] = useState(false);
+  const [showHint, setShowHint] = useState(false);
 
   const shape = BUILD_ROUNDS[round];
   const n = shape.dots.length;
@@ -43,19 +64,23 @@ function Station1({ audioEnabled, onNext }) {
   useEffect(() => {
     setDotsClicked(0);
     setComplete(false);
+    if (audioEnabled) narrate(getSimulateIntro(0));
   }, [round]);
 
   const handleClickDot = (index) => {
     if (dotsClicked === index && !complete) {
+      if (audioEnabled) playClick();
       const next = dotsClicked + 1;
       setDotsClicked(next);
       if (next === n) {
+        if (audioEnabled) playSuccess();
         setComplete(true);
       }
     }
   };
 
   const handleAdvance = () => {
+    if (audioEnabled) playClick();
     if (round < BUILD_ROUNDS.length - 1) {
       setRound(r => r + 1);
     } else {
@@ -65,229 +90,274 @@ function Station1({ audioEnabled, onNext }) {
 
   return (
     <div style={{ textAlign: 'center', width: '100%' }}>
-      <div className="station-header"><h2>📐 Build a Shape!</h2></div>
-      <p style={{ color: 'var(--text-secondary)', marginBottom: 8 }}>
-        Tap the glowing dots in order to draw a <strong style={{ color: 'var(--gold)' }}>{shape.label}</strong>! {shape.emoji}
+      <div className="station-header"><h2>📐 Build a Square!</h2></div>
+      <p style={{ color: 'var(--text-secondary)', marginBottom: 12, fontSize: '0.95rem' }}>
+        Tap the glowing dots in order to draw a square with{' '}
+        <strong style={{ color: 'var(--gold)' }}>{shape.label}</strong>!
       </p>
 
       {/* Round indicator */}
-      <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 16 }}>
+      <div className="round-badge">
         {BUILD_ROUNDS.map((r, i) => (
-          <div key={i} style={{
-            width: 28, height: 28, borderRadius: '50%',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '1rem',
-            background: i < round ? 'var(--gold)' : i === round ? 'var(--coral)' : 'rgba(255,255,255,0.1)',
-            transition: 'all 0.3s',
-          }}>{r.emoji}</div>
+          <div key={i} className={`round-pip ${i < round ? 'done' : i === round ? 'active' : 'pending'}`}>
+            {i < round ? '✓' : r.emoji}
+          </div>
         ))}
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
+      {/* SVG Drawing */}
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
         <svg width="200" height="200" style={{ background: 'rgba(0,0,0,0.15)', borderRadius: '16px' }}>
-          {/* Drawn lines */}
           {shape.dots.map((p1, i) => {
             const p2 = shape.dots[(i + 1) % n];
             const drawn = (i < dotsClicked - 1) || (dotsClicked === n && i === n - 1);
             if (!drawn) return null;
-            return <line key={`l${i}`} x1={p1.cx} y1={p1.cy} x2={p2.cx} y2={p2.cy} stroke="var(--gold)" strokeWidth="6" strokeLinecap="round" />;
+            return (
+              <line key={`l${i}`} x1={p1.cx} y1={p1.cy} x2={p2.cx} y2={p2.cy}
+                stroke="var(--gold)" strokeWidth="5" strokeLinecap="round"
+                style={{ filter: 'drop-shadow(0 0 4px rgba(255,193,7,0.6))' }}
+              />
+            );
           })}
-
-          {/* Dots */}
           {shape.dots.map((d, i) => (
-            <g key={`d${i}`} onClick={() => handleClickDot(i)} style={{ cursor: dotsClicked === i && !complete ? 'pointer' : 'default' }}>
-              <circle cx={d.cx} cy={d.cy} r="15" fill={dotsClicked > i ? 'var(--gold)' : (dotsClicked === i ? 'var(--coral)' : '#444')} style={{ transition: 'fill 0.3s' }} />
+            <g key={`d${i}`} onClick={() => handleClickDot(i)}
+              style={{ cursor: dotsClicked === i && !complete ? 'pointer' : 'default' }}>
+              <circle cx={d.cx} cy={d.cy} r="14"
+                fill={dotsClicked > i ? 'var(--gold)' : dotsClicked === i ? 'var(--coral)' : 'rgba(80,80,120,0.9)'}
+                style={{ transition: 'fill 0.3s', filter: dotsClicked === i && !complete ? 'drop-shadow(0 0 8px rgba(255,112,67,0.8))' : 'none' }}
+              />
               {dotsClicked === i && !complete && (
-                <circle cx={d.cx} cy={d.cy} r="26" fill="none" stroke="var(--coral)" strokeWidth="3" style={{ animation: 'pulseRing 1.2s infinite' }} />
+                <circle cx={d.cx} cy={d.cy} r="22" fill="none"
+                  stroke="var(--coral)" strokeWidth="3"
+                  style={{ animation: 'pulseRing 1.2s infinite' }}
+                />
               )}
-              <text x={d.cx} y={d.cy + 5} textAnchor="middle" fontSize="11" fill="white" fontWeight="bold" style={{ pointerEvents: 'none' }}>{i + 1}</text>
+              <text x={d.cx} y={d.cy + 5} textAnchor="middle" fontSize="11"
+                fill="white" fontWeight="bold" style={{ pointerEvents: 'none' }}>
+                {i + 1}
+              </text>
             </g>
           ))}
         </svg>
       </div>
 
-      <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: 8 }}>
+      <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: 8 }}>
         {dotsClicked < n ? `Tap dot ${dotsClicked + 1} of ${n}` : ''}
-      </div>
+      </p>
 
-      {complete && (
-        <div style={{ animation: 'bounceIn 0.5s' }}>
-          <div style={{ fontSize: '1.1rem', color: 'var(--gold)', marginBottom: 12 }}>
-            ✨ You built a {shape.label}! ({n} sides, {n} corners)
-          </div>
-          <button className="btn btn-primary" onClick={handleAdvance}>
-            {round < BUILD_ROUNDS.length - 1 ? `Next Shape ➡️` : 'Done! ➡️'}
+      {!complete && (
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}>
+          <button className="btn-hint" onClick={() => setShowHint(true)} id="s1-hint-btn">
+            💡 Need a Hint?
           </button>
         </div>
       )}
 
+      {complete && (
+        <div className="station-success-box">
+          <div className="station-success-formula">
+            Area = {shape.side} × {shape.side} = <strong>{shape.area}</strong> sq unit{shape.area !== 1 ? 's' : ''}
+          </div>
+          <div className="station-success-perimeter">
+            Perimeter = 4 × {shape.side} = <strong>{shape.side * 4}</strong> units
+          </div>
+          <button className="btn btn-primary" onClick={handleAdvance} id="s1-advance-btn">
+            {round < BUILD_ROUNDS.length - 1 ? 'Next Square ➡️' : '✓ Done!'}
+          </button>
+        </div>
+      )}
+
+      {showHint && <HintPopup hint={shape.hint} onClose={() => setShowHint(false)} />}
+
       <style>{`
         @keyframes pulseRing {
           0% { r: 22; opacity: 1; }
-          100% { r: 32; opacity: 0; }
+          100% { r: 34; opacity: 0; }
         }
       `}</style>
     </div>
   );
 }
 
-// ===========================
-// Station 2: Shape Sorter (3 shapes to drop)
-// ===========================
-const SORT_ROUNDS = [
-  { shape: '■', label: 'Square', color: 'var(--coral)', emoji: '🟦' },
-  { shape: '▲', label: 'Triangle', color: 'var(--gold)', emoji: '🔺' },
-  { shape: '⬠', label: 'Pentagon', color: '#7c5cbf', emoji: '⬠' },
+// ─────────────────────────────────────────────
+// Station 2: Formula Builder
+// ─────────────────────────────────────────────
+const FORMULA_ROUNDS = [
+  { side: 3, area: 9,  options: [3, 4, 6, 9],   hint: 'Fill in: Side × Side = Area. The side is 3, so tap 3, then 3, then 3×3=?' },
+  { side: 4, area: 16, options: [4, 8, 12, 16],  hint: 'Side = 4. So tap 4 for both sides, then calculate 4 × 4 for the area.' },
+  { side: 5, area: 25, options: [5, 10, 20, 25], hint: 'Side = 5. Fill Side × Side = Area. What is 5 × 5?' },
 ];
 
 function Station2({ audioEnabled, onNext }) {
   const [round, setRound] = useState(0);
-  const [dropped, setDropped] = useState(false);
+  const [slots, setSlots] = useState([null, null, null]);
+  const [showHint, setShowHint] = useState(false);
+  const [wrongFlash, setWrongFlash] = useState(false);
+
+  const currentRound = FORMULA_ROUNDS[round];
+  const expectedSlots = [currentRound.side, currentRound.side, currentRound.area];
 
   useEffect(() => {
-    setDropped(false);
+    setSlots([null, null, null]);
+    if (audioEnabled) narrate(getSimulateIntro(1));
   }, [round]);
 
-  const handleDrop = () => {
-    if (dropped) return;
-    setDropped(true);
+  const activeSlotIndex = slots.findIndex(s => s === null);
+  const isComplete = activeSlotIndex === -1;
+
+  const handleOptionClick = (val) => {
+    if (isComplete) return;
+    if (val === expectedSlots[activeSlotIndex]) {
+      if (audioEnabled) playClick();
+      const newSlots = [...slots];
+      newSlots[activeSlotIndex] = val;
+      setSlots(newSlots);
+      if (newSlots.findIndex(s => s === null) === -1 && audioEnabled) playSuccess();
+    } else {
+      if (audioEnabled) playError();
+      setWrongFlash(true);
+      setTimeout(() => setWrongFlash(false), 600);
+    }
   };
 
   const handleAdvance = () => {
-    if (round < SORT_ROUNDS.length - 1) {
+    if (audioEnabled) playClick();
+    if (round < FORMULA_ROUNDS.length - 1) {
       setRound(r => r + 1);
     } else {
       onNext();
     }
   };
 
-  const s = SORT_ROUNDS[round];
+  const slotStyle = (val, colorFilled) => ({
+    width: 52, height: 52, border: `2px dashed ${val ? 'transparent' : 'rgba(255,255,255,0.3)'}`,
+    borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center',
+    fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 700,
+    background: val ? colorFilled : 'rgba(255,255,255,0.05)',
+    color: val ? '#1a1a2e' : 'rgba(255,255,255,0.4)',
+    transition: 'all 0.3s',
+    animation: val ? 'popIn 0.3s ease' : 'none',
+  });
 
   return (
     <div style={{ textAlign: 'center', width: '100%' }}>
-      <div className="station-header"><h2>📥 Shape Sorter</h2></div>
-      <p style={{ color: 'var(--text-secondary)', marginBottom: 8 }}>
-        Tap the <strong style={{ color: s.color }}>{s.label}</strong> block to drop it into the matching hole!
+      <div className="station-header"><h2>✖️ Formula Builder</h2></div>
+      <p style={{ color: 'var(--text-secondary)', marginBottom: 12, fontSize: '0.95rem' }}>
+        A square has <strong style={{ color: 'var(--coral)' }}>Side = {currentRound.side}</strong>. Tap the correct values to complete the formula!
       </p>
 
       {/* Round indicator */}
-      <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 16 }}>
-        {SORT_ROUNDS.map((r, i) => (
-          <div key={i} style={{
-            width: 28, height: 28, borderRadius: '50%',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '1rem',
-            background: i < round ? 'var(--gold)' : i === round ? s.color : 'rgba(255,255,255,0.1)',
-            transition: 'all 0.3s',
-          }}>{r.emoji}</div>
+      <div className="round-badge">
+        {FORMULA_ROUNDS.map((_, i) => (
+          <div key={i} className={`round-pip ${i < round ? 'done' : i === round ? 'active' : 'pending'}`}>
+            {i < round ? '✓' : i + 1}
+          </div>
         ))}
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'center', gap: 48, alignItems: 'flex-start' }}>
-        {/* The sorter well */}
-        <div style={{ position: 'relative', width: '120px', height: '200px', background: 'rgba(0,0,0,0.15)', borderRadius: '12px', overflow: 'visible' }}>
-          {/* hole */}
-          <div style={{ position: 'absolute', bottom: '16px', left: '10px', width: '100px', height: '80px', border: '3px dashed #666', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#555', fontSize: '2rem' }}>
-            {s.shape}
-          </div>
-          {/* falling block */}
-          <div
-            onClick={handleDrop}
-            style={{
-              position: 'absolute',
-              top: dropped ? '104px' : '12px',
-              left: '10px',
-              width: '100px',
-              height: '80px',
-              background: s.color,
-              borderRadius: '8px',
-              cursor: dropped ? 'default' : 'pointer',
-              transition: 'top 0.55s cubic-bezier(0.4, 0, 0.2, 1.5)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white',
-              fontWeight: 'bold',
-              fontSize: '2.2rem',
-              boxShadow: dropped ? 'none' : '0 6px 24px rgba(0,0,0,0.4)',
-              userSelect: 'none',
-            }}
-          >
-            {s.shape}
-          </div>
-        </div>
-
-        {/* Instructions */}
-        <div style={{ paddingTop: 60, textAlign: 'left', maxWidth: 140 }}>
-          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-            {dropped
-              ? <span style={{ color: 'var(--gold)' }}>✅ Perfect fit!</span>
-              : <>Tap the <strong style={{ color: s.color }}>{s.shape}</strong> block to drop it!</>
-            }
-          </div>
+      {/* Visual square reference */}
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
+        <div style={{
+          width: 80, height: 80, background: 'rgba(255,160,0,0.12)', border: '2px solid var(--gold)',
+          borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          position: 'relative',
+        }}>
+          <span style={{ position: 'absolute', top: -22, left: '50%', transform: 'translateX(-50%)', color: 'var(--gold)', fontSize: '0.88rem', fontWeight: 700 }}>{currentRound.side}</span>
+          <span style={{ position: 'absolute', left: -22, top: '50%', transform: 'translateY(-50%)', color: 'var(--gold)', fontSize: '0.88rem', fontWeight: 700 }}>{currentRound.side}</span>
+          <span style={{ fontSize: '2rem' }}>🟦</span>
         </div>
       </div>
 
-      {dropped && (
-        <div style={{ marginTop: 20, animation: 'bounceIn 0.5s' }}>
-          <button className="btn btn-primary" onClick={handleAdvance}>
-            {round < SORT_ROUNDS.length - 1 ? 'Next Shape ➡️' : 'Done! ➡️'}
+      {/* Equation slots */}
+      <div style={{
+        display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 10,
+        fontSize: '1.6rem', fontWeight: 700, marginBottom: 28, flexWrap: 'wrap',
+        animation: wrongFlash ? 'shake 0.4s ease' : 'none',
+      }}>
+        <div style={slotStyle(slots[0], 'var(--gold)')}>{slots[0] ?? '?'}</div>
+        <span style={{ color: 'var(--text-secondary)' }}>×</span>
+        <div style={slotStyle(slots[1], 'var(--gold)')}>{slots[1] ?? '?'}</div>
+        <span style={{ color: 'var(--text-secondary)' }}>=</span>
+        <div style={{ ...slotStyle(slots[2], 'var(--coral)'), width: 62 }}>{slots[2] ?? '?'}</div>
+      </div>
+
+      {/* Options */}
+      {!isComplete && (
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 16 }}>
+          {currentRound.options.map((opt, i) => (
+            <button
+              key={i}
+              className="option-btn"
+              onClick={() => handleOptionClick(opt)}
+              style={{ minWidth: 64, padding: '12px 20px', fontSize: '1.3rem', borderRadius: 12 }}
+            >
+              {opt}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {!isComplete && (
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: 8 }}>
+          <button className="btn-hint" onClick={() => setShowHint(true)} id="s2-hint-btn">
+            💡 Need a Hint?
           </button>
         </div>
       )}
+
+      {isComplete && (
+        <div className="station-success-box">
+          <div className="station-success-formula">
+            🎉 {currentRound.side} × {currentRound.side} = {currentRound.area} — Correct!
+          </div>
+          <button className="btn btn-primary" onClick={handleAdvance} id="s2-advance-btn">
+            {round < FORMULA_ROUNDS.length - 1 ? 'Next Formula ➡️' : '✓ Done!'}
+          </button>
+        </div>
+      )}
+
+      {showHint && <HintPopup hint={currentRound.hint} onClose={() => setShowHint(false)} />}
     </div>
   );
 }
 
-// ===========================
-// Station 3: Side Counter (count sides of triangle, square, hexagon)
-// ===========================
+// ─────────────────────────────────────────────
+// Station 3: Area Counter
+// ─────────────────────────────────────────────
 const COUNT_ROUNDS = [
-  {
-    label: 'Triangle',
-    answer: 3,
-    points: [{ x: 100, y: 25 }, { x: 25, y: 165 }, { x: 175, y: 165 }],
-  },
-  {
-    label: 'Rectangle',
-    answer: 4,
-    points: [{ x: 30, y: 55 }, { x: 170, y: 55 }, { x: 170, y: 155 }, { x: 30, y: 155 }],
-  },
-  {
-    label: 'Hexagon',
-    answer: 6,
-    points: [
-      { x: 100, y: 20 },
-      { x: 170, y: 60 },
-      { x: 170, y: 140 },
-      { x: 100, y: 180 },
-      { x: 30, y: 140 },
-      { x: 30, y: 60 },
-    ],
-  }
+  { side: 2, label: '2×2 Square', hint: 'Tap each small square inside the grid one at a time. Count as you go!' },
+  { side: 3, label: '3×3 Square', hint: 'There are 3 rows of 3 tiles. Tap them all — that\'s 3 × 3 = 9 tiles!' },
+  { side: 4, label: '4×4 Square', hint: 'A 4×4 square has 4 rows of 4 tiles. Tap all 16 tiles to find the area!' },
 ];
 
 function Station3({ audioEnabled, onComplete }) {
   const [round, setRound] = useState(0);
-  const [clickedSides, setClickedSides] = useState([]);
+  const [clickedTiles, setClickedTiles] = useState(new Set());
+  const [showHint, setShowHint] = useState(false);
 
-  const shape = COUNT_ROUNDS[round];
-  const n = shape.points.length;
+  const currentRound = COUNT_ROUNDS[round];
+  const totalTiles = currentRound.side * currentRound.side;
 
   useEffect(() => {
-    setClickedSides(Array(COUNT_ROUNDS[round].points.length).fill(false));
+    setClickedTiles(new Set());
+    if (audioEnabled) narrate(getSimulateIntro(2));
   }, [round]);
 
-  const handleSideClick = (index) => {
-    const newSides = [...clickedSides];
-    newSides[index] = true;
-    setClickedSides(newSides);
+  const handleTileClick = (index) => {
+    if (!clickedTiles.has(index)) {
+      if (audioEnabled) playClick();
+      const newClicked = new Set(clickedTiles);
+      newClicked.add(index);
+      setClickedTiles(newClicked);
+      if (newClicked.size === totalTiles && audioEnabled) playSuccess();
+    }
   };
 
-  const doneCount = clickedSides.filter(Boolean).length;
-  const isComplete = doneCount === n;
+  const doneCount = clickedTiles.size;
+  const isComplete = doneCount === totalTiles;
 
   const handleAdvance = () => {
+    if (audioEnabled) playClick();
     if (round < COUNT_ROUNDS.length - 1) {
       setRound(r => r + 1);
     } else {
@@ -295,104 +365,155 @@ function Station3({ audioEnabled, onComplete }) {
     }
   };
 
+  const maxGridPx = 200;
+  const tileSize = Math.floor(maxGridPx / currentRound.side) - 4;
+
   return (
     <div style={{ textAlign: 'center', width: '100%' }}>
-      <div className="station-header"><h2>🔢 Side Counter</h2></div>
-      <p style={{ color: 'var(--text-secondary)', marginBottom: 8 }}>
-        Tap each side of the <strong style={{ color: 'var(--gold)' }}>{shape.label}</strong> to count them!
+      <div className="station-header"><h2>🔢 Area Counter</h2></div>
+      <p style={{ color: 'var(--text-secondary)', marginBottom: 12, fontSize: '0.95rem' }}>
+        Tap every tile inside the{' '}
+        <strong style={{ color: 'var(--gold)' }}>{currentRound.label}</strong> to find its Area!
       </p>
 
       {/* Round indicator */}
-      <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 16 }}>
+      <div className="round-badge">
         {COUNT_ROUNDS.map((r, i) => (
-          <div key={i} style={{
-            width: 30, height: 30, borderRadius: '50%',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '0.8rem', fontWeight: 700,
-            background: i < round ? 'var(--gold)' : i === round ? 'var(--coral)' : 'rgba(255,255,255,0.1)',
-            color: 'white', transition: 'all 0.3s',
-          }}>{r.answer}</div>
+          <div key={i} className={`round-pip ${i < round ? 'done' : i === round ? 'active' : 'pending'}`}>
+            {i < round ? '✓' : `${r.side}²`}
+          </div>
         ))}
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'center', gap: 32, alignItems: 'center', flexWrap: 'wrap' }}>
-        <svg width="200" height="200" style={{ background: 'rgba(0,0,0,0.15)', borderRadius: '16px' }}>
-          <polygon points={shape.points.map(p => `${p.x},${p.y}`).join(' ')} fill="rgba(255,255,255,0.04)" />
-          {shape.points.map((p1, i) => {
-            const p2 = shape.points[(i + 1) % n];
-            return (
-              <g key={i} onClick={() => handleSideClick(i)} style={{ cursor: clickedSides[i] ? 'default' : 'pointer' }}>
-                <line x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} stroke="transparent" strokeWidth="22" />
-                <line
-                  x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y}
-                  stroke={clickedSides[i] ? 'var(--gold)' : '#555'}
-                  strokeWidth="8" strokeLinecap="round"
-                  style={{ transition: 'stroke 0.25s' }}
-                />
-              </g>
-            );
-          })}
-          {shape.points.map((p, i) => (
-            <circle key={`dot-${i}`} cx={p.x} cy={p.y} r="5" fill={doneCount > i ? 'var(--gold)' : '#888'} style={{ pointerEvents: 'none' }} />
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 32, flexWrap: 'wrap', marginBottom: 12 }}>
+        {/* Tile grid */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: `repeat(${currentRound.side}, ${tileSize}px)`,
+          gap: '4px',
+          background: 'rgba(0,0,0,0.2)',
+          padding: '10px',
+          borderRadius: '14px',
+          border: '1px solid rgba(255,255,255,0.08)',
+        }}>
+          {Array.from({ length: totalTiles }).map((_, i) => (
+            <div
+              key={i}
+              onClick={() => handleTileClick(i)}
+              style={{
+                width: tileSize, height: tileSize,
+                background: clickedTiles.has(i)
+                  ? 'linear-gradient(135deg, var(--gold), var(--gold-dark))'
+                  : 'rgba(255,255,255,0.05)',
+                border: `1px solid ${clickedTiles.has(i) ? 'var(--gold-dark)' : 'rgba(255,255,255,0.15)'}`,
+                borderRadius: '6px',
+                cursor: clickedTiles.has(i) ? 'default' : 'pointer',
+                transition: 'background 0.25s, transform 0.15s',
+                transform: clickedTiles.has(i) ? 'scale(0.93)' : 'scale(1)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: '#1a1a2e', fontWeight: 800,
+                fontSize: `${Math.max(10, tileSize * 0.38)}px`,
+                boxShadow: clickedTiles.has(i) ? '0 2px 8px rgba(255,193,7,0.3)' : 'none',
+              }}
+            >
+              {clickedTiles.has(i) ? '✓' : ''}
+            </div>
           ))}
-        </svg>
+        </div>
 
         {/* Live count */}
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '3rem', fontWeight: 900, color: 'var(--gold)', lineHeight: 1 }}>{doneCount}</div>
-          <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: 4 }}>sides tapped</div>
-          <div style={{ marginTop: 12 }}>
-            {shape.points.map((_, i) => (
-              <div key={i} style={{
-                width: 12, height: 12, borderRadius: '50%',
-                background: clickedSides[i] ? 'var(--gold)' : 'rgba(255,255,255,0.15)',
-                display: 'inline-block', margin: '2px',
-                transition: 'background 0.25s'
-              }} />
-            ))}
+          <div style={{ fontSize: '3.5rem', fontWeight: 900, color: 'var(--gold)', lineHeight: 1, fontFamily: 'var(--font-display)' }}>
+            {doneCount}
+          </div>
+          <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginTop: 4 }}>
+            of {totalTiles} tiles
+          </div>
+          <div style={{ marginTop: 12, fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+            {Math.round((doneCount / totalTiles) * 100)}% done
           </div>
         </div>
       </div>
 
-      {isComplete && (
-        <div style={{ marginTop: 20, animation: 'bounceIn 0.5s' }}>
-          <div style={{ fontSize: '1.1rem', color: 'var(--gold)', marginBottom: 12 }}>
-            🎉 {shape.label} has {n} sides!
-          </div>
-          <button className="btn btn-primary" onClick={handleAdvance}>
-            {round < COUNT_ROUNDS.length - 1 ? 'Next Shape ➡️' : '🚀 Complete Simulation!'}
+      {!isComplete && (
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: 4 }}>
+          <button className="btn-hint" onClick={() => setShowHint(true)} id="s3-hint-btn">
+            💡 Need a Hint?
           </button>
         </div>
       )}
+
+      {isComplete && (
+        <div className="station-success-box">
+          <div className="station-success-formula">
+            🎉 The area is <strong>{totalTiles}</strong> square unit{totalTiles !== 1 ? 's' : ''}!
+          </div>
+          <button className="btn btn-primary" onClick={handleAdvance} id="s3-advance-btn">
+            {round < COUNT_ROUNDS.length - 1 ? 'Next Square ➡️' : '🚀 Complete Simulation!'}
+          </button>
+        </div>
+      )}
+
+      {showHint && <HintPopup hint={currentRound.hint} onClose={() => setShowHint(false)} />}
     </div>
   );
 }
 
-// ===========================
+// ─────────────────────────────────────────────
 // Main SimulatePhase
-// ===========================
+// ─────────────────────────────────────────────
 export default function SimulatePhase({ onComplete, audioEnabled }) {
   const [station, setStation] = useState(0);
-  const nextStation = useCallback(() => { if (station < 2) setStation(s => s + 1); }, [station]);
+
+  const nextStation = useCallback(() => {
+    if (audioEnabled) playClick();
+    if (station < 2) setStation(s => s + 1);
+  }, [station, audioEnabled]);
+
+  const handleSkip = () => {
+    if (audioEnabled) playClick();
+    onComplete();
+  };
 
   return (
     <div className="simulate-phase">
       <div className="simulate-header">
-        <h3 className="simulate-label">🎮 Simulate</h3>
-        <p className="simulate-sublabel">Build, sort, and count — interact with the shapes!</p>
+        <p className="simulate-label">🎮 Simulate</p>
+        <p className="simulate-sublabel">Build, formulate, and count — master the area of squares!</p>
       </div>
-      <div className="progress-dots">
+
+      {/* Station progress bar */}
+      <div className="simulate-stations-bar">
         {STATIONS.map((s, i) => (
-          <div key={i} className="simulate-dot-wrapper">
-            <div className={`progress-dot ${i === station ? 'active' : i < station ? 'completed' : ''}`} />
-            <span className="simulate-dot-label">{s.icon} {s.label}</span>
+          <div key={i} style={{ display: 'flex', alignItems: 'center' }}>
+            <div className={`sim-station-pip ${i < station ? 'completed' : i === station ? 'active' : ''}`}>
+              {i < station ? '✓' : s.icon} {s.label}
+            </div>
+            {i < STATIONS.length - 1 && (
+              <div className={`sim-station-connector ${i < station ? 'filled' : ''}`} style={{ margin: '0 6px' }} />
+            )}
           </div>
         ))}
       </div>
-      <div className="glass-card" style={{ maxWidth: 700, width: '100%', animation: 'slideUp 0.4s ease', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '28px 24px' }}>
+
+      {/* Station card */}
+      <div
+        className="glass-card"
+        style={{
+          maxWidth: 680, width: '100%', animation: 'slideUp 0.4s ease',
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
+          padding: '28px 24px',
+        }}
+      >
         {station === 0 && <Station1 audioEnabled={audioEnabled} onNext={nextStation} />}
         {station === 1 && <Station2 audioEnabled={audioEnabled} onNext={nextStation} />}
         {station === 2 && <Station3 audioEnabled={audioEnabled} onComplete={onComplete} />}
+      </div>
+
+      <div style={{ marginTop: 20, textAlign: 'center' }}>
+        <button onClick={handleSkip} className="skip-link">
+          Skip Simulations ⏩
+        </button>
       </div>
     </div>
   );

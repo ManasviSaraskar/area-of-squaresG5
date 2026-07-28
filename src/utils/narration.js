@@ -2,24 +2,23 @@ import { say, ask, cheer, emphasize, think, instruct, encourage } from './audio'
 
 export function getWonderNarration() {
   return [
-    think("John is building a kite for the Tokyo Kite Festival."),
-    think("Its frame needs two sticks that never cross, no matter how far they stretch."),
-    ask("What kind of lines does John need? Let's find out!")
+    think("John wants to cover his bedroom floor with cool new square tiles."),
+    ask("If his room is a big square, how many tiles will he need? Let's find out about area!")
   ];
 }
 
 export function getStoryPanelNarration(panelId) {
   switch (panelId) {
     case 1:
-      return [say("John waits at the station. The Global Shapes Express only stops at stations that follow shapes! Every door, every window, every arch around us is a shape, the conductor says.")];
+      return [say("John is waiting at the station. He looks down at the floor and notices the beautiful square tiles. Wow, if I count the tiles in a square, I can find its area! he says.")];
     case 2:
-      return [say("Sarah arrives in London. She notices Big Ben's huge circular clock face. The windows in the buildings are squares. A circle is perfectly round with no corners, says Sarah.")];
+      return [say("Sarah looks at a giant square window. It's divided into smaller square glass panes. If the window has 3 panes across and 3 down, there are 9 panes total! she calculates.")];
     case 3:
-      return [say("Mike visits a pagoda in Tokyo. Every roof is a triangle! Even Mount Fuji in the distance is a giant triangle shape. A triangle has 3 sides and 3 corners, Mike says proudly.")];
+      return [say("Mike is drawing pixel art on his computer. Every character is made of tiny squares! A 4 by 4 pixel block takes 16 squares to fill, Mike explains to his friends.")];
     case 4:
-      return [say("Emma stands before the Pyramids in Egypt. Each face of a pyramid is a giant triangle! The ancient Egyptians used triangle shapes to build structures that last thousands of years! Emma gasps.")];
+      return [say("Emma weaves a cozy carpet using square patches. If I want an area of 25, I need a side length of 5 patches! she realizes. She carefully stitches them together.")];
     case 5:
-      return [cheer("John, Sarah, Mike, and Emma reunite at the final station. They discovered circles, squares, triangles, and rectangles everywhere they went. Now it's your turn to find shapes in the world around you!")];
+      return [cheer("John, Sarah, Mike, and Emma reunite. They discovered that area is everywhere! Now it's your turn to measure the world around you using squares!")];
     default:
       return [];
   }
@@ -28,11 +27,11 @@ export function getStoryPanelNarration(panelId) {
 export function getSimulateIntro(stationId) {
   switch(stationId) {
     case 0:
-      return [instruct("Tap two lines and tell me — are they parallel, perpendicular, or neither?")];
+      return [instruct("Tap the glowing dots in order to draw a square!")];
     case 1:
-      return [instruct("Look at the angle. Is it a right angle, an acute angle, or an obtuse angle?")];
+      return [instruct("Tap the tiles to paint a square with the target area!")];
     case 2:
-      return [instruct("Look at the shape. How many sides does it have?")];
+      return [instruct("Tap every tile inside the square to find its area!")];
     default:
       return [];
   }
@@ -48,10 +47,18 @@ export function getFeedbackNarration(isCorrect, attemptCount) {
   }
 }
 
+export function getHintNarration(hintText) {
+  return [think(hintText)];
+}
+
+export function getAchievementNarration(achievementName) {
+  return [cheer(`Fantastic! You unlocked the achievement: ${achievementName}! Keep going!`)];
+}
+
 export function getReflectNarration() {
   return [
-    think("What a journey around the world! Can you find a right angle in your own room?"),
-    cheer("Lesson complete! You are a Global Shape Quest Champion!")
+    think("What a journey around the world! Can you find a square in your own room and calculate its area?"),
+    cheer("Lesson complete! You are an Area of Squares Champion!")
   ];
 }
 

@@ -21,21 +21,20 @@ const STYLE_SETTINGS = {
 
 const phrases = [
   // Wonder
-  { text: "John is building a kite for the Tokyo Kite Festival.", style: 'thinking' },
-  { text: "Its frame needs two sticks that never cross, no matter how far they stretch.", style: 'thinking' },
-  { text: "What kind of lines does John need? Let's find out!", style: 'question' },
+  { text: "John wants to cover his bedroom floor with cool new square tiles.", style: 'thinking' },
+  { text: "If his room is a big square, how many tiles will he need? Let's find out about area!", style: 'question' },
   
   // Story
-  { text: "John waits at the station. The Global Shapes Express only stops at stations that follow shapes! Every door, every window, every arch around us is a shape, the conductor says.", style: 'statement' },
-  { text: "Sarah arrives in London. She notices Big Ben's huge circular clock face. The windows in the buildings are squares. A circle is perfectly round with no corners, says Sarah.", style: 'statement' },
-  { text: "Mike visits a pagoda in Tokyo. Every roof is a triangle! Even Mount Fuji in the distance is a giant triangle shape. A triangle has 3 sides and 3 corners, Mike says proudly.", style: 'statement' },
-  { text: "Emma stands before the Pyramids in Egypt. Each face of a pyramid is a giant triangle! The ancient Egyptians used triangle shapes to build structures that last thousands of years! Emma gasps.", style: 'statement' },
-  { text: "John, Sarah, Mike, and Emma reunite at the final station. They discovered circles, squares, triangles, and rectangles everywhere they went. Now it's your turn to find shapes in the world around you!", style: 'celebration' },
+  { text: "John is waiting at the station. He looks down at the floor and notices the beautiful square tiles. Wow, if I count the tiles in a square, I can find its area! he says.", style: 'statement' },
+  { text: "Sarah looks at a giant square window. It's divided into smaller square glass panes. If the window has 3 panes across and 3 down, there are 9 panes total! she calculates.", style: 'statement' },
+  { text: "Mike is drawing pixel art on his computer. Every character is made of tiny squares! A 4 by 4 pixel block takes 16 squares to fill, Mike explains to his friends.", style: 'statement' },
+  { text: "Emma weaves a cozy carpet using square patches. If I want an area of 25, I need a side length of 5 patches! she realizes. She carefully stitches them together.", style: 'statement' },
+  { text: "John, Sarah, Mike, and Emma reunite. They discovered that area is everywhere! Now it's your turn to measure the world around you using squares!", style: 'celebration' },
   
   // Simulate
-  { text: "Tap two lines and tell me — are they parallel, perpendicular, or neither?", style: 'instruction' },
-  { text: "Look at the angle. Is it a right angle, an acute angle, or an obtuse angle?", style: 'instruction' },
-  { text: "Look at the shape. How many sides does it have?", style: 'instruction' },
+  { text: "Tap the glowing dots in order to draw a square!", style: 'instruction' },
+  { text: "Tap the tiles to paint a square with the target area!", style: 'instruction' },
+  { text: "Tap every tile inside the square to find its area!", style: 'instruction' },
   
   // Feedback
   { text: "Amazing! You found the shape's secret! You're a geometry star!", style: 'celebration' },
@@ -43,29 +42,29 @@ const phrases = [
   { text: "Let's count together!", style: 'thinking' },
   
   // Reflect
-  { text: "What a journey around the world! Can you find a right angle in your own room?", style: 'thinking' },
-  { text: "Lesson complete! You are a Global Shape Quest Champion!", style: 'celebration' },
+  { text: "What a journey around the world! Can you find a square in your own room and calculate its area?", style: 'thinking' },
+  { text: "Lesson complete! You are an Area of Squares Champion!", style: 'celebration' },
 
   // World 1 Questions
-  { text: "Look at the railway tracks. Are they parallel, perpendicular, or neither?", style: 'question' },
-  { text: "Look at the window grid. Are the crossing lines parallel, perpendicular, or neither?", style: 'question' },
-  { text: "Look at the bridge cables. Are they parallel, perpendicular, or neither?", style: 'question' },
-  { text: "Look at the road crossing. Are the lines parallel, perpendicular, or neither?", style: 'question' },
-  { text: "Look at the fence posts. Are they parallel, perpendicular, or neither?", style: 'question' },
+  { text: "If a square courtyard is made of 2 rows of 2 tiles, what is its area?", style: 'question' },
+  { text: "A small square mosaic has 3 columns and 3 rows. How many total tiles (area) is it?", style: 'question' },
+  { text: "What do we call the total space covered by the tiles inside a square?", style: 'question' },
+  { text: "If a square has side length of 1 unit, what is its area?", style: 'question' },
+  { text: "If we double the side length of a 1x1 square to 2x2, what happens to its area?", style: 'question' },
 
   // World 2 Questions
-  { text: "Is the corner of this book a right angle, an acute angle, or an obtuse angle?", style: 'question' },
-  { text: "Is the tip of this pizza slice a right angle, an acute angle, or an obtuse angle?", style: 'question' },
-  { text: "Is the roof of this house a right angle, an acute angle, or an obtuse angle?", style: 'question' },
-  { text: "Is the corner of a square a right angle, an acute angle, or an obtuse angle?", style: 'question' },
-  { text: "Is the point of this star a right angle, an acute angle, or an obtuse angle?", style: 'question' },
+  { text: "A pixel art block is a square with side length 4. What is its area?", style: 'question' },
+  { text: "If a square window pane has a side of 5 units, what is its area?", style: 'question' },
+  { text: "Which formula is correct for finding the Area of a Square?", style: 'question' },
+  { text: "If a square has side length of 6, what is its area?", style: 'question' },
+  { text: "What is the area of a square with a side length of 7?", style: 'question' },
 
   // World 3 Questions
-  { text: "This shape has 3 sides and 3 corners. What is it called?", style: 'question' },
-  { text: "This shape has 4 equal sides and 4 right angles. What is it called?", style: 'question' },
-  { text: "This shape has 5 sides and 5 corners. What is it called?", style: 'question' },
-  { text: "This shape has 6 sides and 6 corners. What is it called?", style: 'question' },
-  { text: "This shape has 4 sides, but only the opposite sides are equal. What is it called?", style: 'question' },
+  { text: "A square plaza in Grid City has an area of 100 square blocks. What is its side length?", style: 'question' },
+  { text: "If a square carpet has an area of 64 square units, how long is one side?", style: 'question' },
+  { text: "Which square has the largest area?", style: 'question' },
+  { text: "If you have 81 small square tiles, can you make a perfect large square?", style: 'question' },
+  { text: "A perfect square with a side of 10 has an area of...", style: 'question' }
 ];
 
 function slugify(text) {

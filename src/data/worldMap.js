@@ -1,29 +1,29 @@
 export const worldMap = [
   {
     id: 0,
-    name: "Eiffel Tower",
-    country: "France",
-    theme: "eiffel_tower",
-    focus: "Lines: parallel & perpendicular",
-    description: "Learn about intersecting and parallel lines.",
-    image: "/assets/images/eiffel_tower.png"
+    name: "The Tile Courtyard",
+    country: "Mediterranean",
+    theme: "courtyard",
+    focus: "Counting tiles for area",
+    description: "Learn to calculate the area of small squares by counting tiles.",
+    image: "/assets/images/courtyard.png"
   },
   {
     id: 1,
-    name: "Big Ben",
-    country: "UK",
-    theme: "big_ben",
-    focus: "Angles: right angle basics",
-    description: "Learn to identify right, acute, and obtuse angles.",
-    image: "/assets/images/big_ben.png"
+    name: "Pixel Art Studio",
+    country: "Digital Realm",
+    theme: "pixel_studio",
+    focus: "Side × Side multiplication",
+    description: "Use multiplication to quickly find the area of squares.",
+    image: "/assets/images/pixel_studio.png"
   },
   {
     id: 2,
-    name: "Pyramids of Giza",
-    country: "Egypt",
-    theme: "pyramids_giza",
-    focus: "Shape classification",
-    description: "Learn to classify shapes based on their sides.",
-    image: "/assets/images/pyramids_giza.png"
+    name: "The Grid City",
+    country: "Future",
+    theme: "grid_city",
+    focus: "Area and Side relationships",
+    description: "Solve problems with larger areas and find sides from area.",
+    image: "/assets/images/grid_city.png"
   }
 ];
