@@ -29,7 +29,7 @@ export const storyPanels = [
     text: "Emma weaves a cozy carpet using square patches. \"If I want an area of 25, I need a side length of 5 patches!\" she realizes. She carefully stitches them together.",
     highlight: '✨ Area = 25 means Side = 5! ✨',
     mascotLine: 'Let\'s weave a carpet! 🧵',
-    image: 'public/assets/images/storypanel4.jpe',
+    image: '/assets/images/storypanel4.jpe',
   },
   {
     id: 5,
@@ -37,7 +37,7 @@ export const storyPanels = [
     text: 'John, Sarah, Mike, and Emma reunite. They discovered that area is everywhere! Now it\'s your turn to measure the world around you using squares!',
     highlight: '✨ You can calculate any square area! ✨',
     mascotLine: "Let's go find the area! 🎉",
-    image: 'public/assets/images/laststorypanel.jpe',
+    image: '/assets/images/laststorypanel.jpe',
   },
 ];
 
