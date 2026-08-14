@@ -462,7 +462,7 @@ function Station3({ audioEnabled, onComplete }) {
 // ─────────────────────────────────────────────
 // Main SimulatePhase
 // ─────────────────────────────────────────────
-export default function SimulatePhase({ onComplete, audioEnabled }) {
+export default function SimulatePhase({ onComplete, onBack, audioEnabled }) {
   const [station, setStation] = useState(0);
 
   const nextStation = useCallback(() => {
@@ -476,44 +476,31 @@ export default function SimulatePhase({ onComplete, audioEnabled }) {
   };
 
   return (
-    <div className="simulate-phase">
-      <div className="simulate-header">
-        <p className="simulate-label">🎮 Simulate</p>
-        <p className="simulate-sublabel">Build, formulate, and count — master the area of squares!</p>
+    <div className="simulate-phase w-full flex flex-col items-center">
+      <div className="simulate-header w-full max-w-4xl text-center" style={{ marginBottom: '32px' }}>
+        <h3 className="simulate-label flex items-center justify-center gap-3" style={{ fontSize: '1.8rem', marginBottom: '8px' }}>
+          🧪 Time Sandbox
+        </h3>
       </div>
 
-      {/* Station progress bar */}
-      <div className="simulate-stations-bar">
+      <div className="progress-dots" style={{ marginBottom: '32px' }}>
         {STATIONS.map((s, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center' }}>
-            <div className={`sim-station-pip ${i < station ? 'completed' : i === station ? 'active' : ''}`}>
-              {i < station ? '✓' : s.icon} {s.label}
-            </div>
-            {i < STATIONS.length - 1 && (
-              <div className={`sim-station-connector ${i < station ? 'filled' : ''}`} style={{ margin: '0 6px' }} />
-            )}
+          <div key={i} className="simulate-dot-wrapper">
+            <div className={`progress-dot ${i === station ? 'active' : i < station ? 'completed' : ''}`} style={{ width: '16px', height: '16px', marginBottom: '8px' }} />
+            <span className="simulate-dot-label" style={{ fontSize: '1.5rem' }}>{s.icon}</span>
           </div>
         ))}
       </div>
 
-      {/* Station card */}
-      <div
-        className="glass-card"
-        style={{
-          maxWidth: 680, width: '100%', animation: 'slideUp 0.4s ease',
-          display: 'flex', flexDirection: 'column', alignItems: 'center',
-          padding: '28px 24px',
-        }}
-      >
+      <div className="w-full max-w-4xl mt-6" style={{ minHeight: '420px' }}>
         {station === 0 && <Station1 audioEnabled={audioEnabled} onNext={nextStation} />}
         {station === 1 && <Station2 audioEnabled={audioEnabled} onNext={nextStation} />}
         {station === 2 && <Station3 audioEnabled={audioEnabled} onComplete={onComplete} />}
       </div>
 
-      <div style={{ marginTop: 20, textAlign: 'center' }}>
-        <button onClick={handleSkip} className="skip-link">
-          Skip Simulations ⏩
-        </button>
+      <div className="sim-nav w-full max-w-4xl" style={{ marginTop: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <button onClick={() => { onBack(); }} className="btn btn-outline" style={{ background: 'rgba(255,255,255,0.1)' }}>← Back</button>
+        <button onClick={() => { onComplete(); }} className="btn btn-outline" style={{ background: 'rgba(255,255,255,0.1)' }}>Skip Phase →</button>
       </div>
     </div>
   );

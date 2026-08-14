@@ -168,7 +168,7 @@ export default function PlayPhase({ onComplete, audioEnabled }) {
   if (currentWorld < 0) {
     const allDone = worldMap.every((_, i) => worldResults[i]);
     return (
-      <div className="play-phase">
+      <div className="practice-phase w-full flex flex-col items-center">
         <div className="play-header">
           <h2 className="play-title">🎯 Choose Your World!</h2>
           <p className="play-subtitle">Complete each world to unlock the next. Earn stars and XP!</p>
@@ -243,7 +243,7 @@ export default function PlayPhase({ onComplete, audioEnabled }) {
     const isLastWorld = currentWorld === worldMap.length - 1;
     const pct = Math.round((score / worldQuestions.length) * 100);
     return (
-      <div className="play-phase">
+      <div className="practice-phase w-full flex flex-col items-center">
         <div className="world-complete-card">
           <div className="world-complete-icon">🎉</div>
           <h2 className="world-complete-title">{w.name} Complete!</h2>
@@ -294,7 +294,7 @@ export default function PlayPhase({ onComplete, audioEnabled }) {
   const pct = Math.round((qIndex / worldQuestions.length) * 100);
 
   return (
-    <div className="play-phase">
+    <div className="practice-phase w-full flex flex-col items-center">
       {/* World badge */}
       <div
         className="play-world-badge"
@@ -330,7 +330,10 @@ export default function PlayPhase({ onComplete, audioEnabled }) {
       </div>
 
       {/* Question card */}
-      <div className="question-card" style={{ animation: 'slideUp 0.3s ease' }}>
+      <div className="glass-card shadow-2xl relative" style={{ width: "100%", maxWidth: "800px", padding: "40px", borderRadius: "24px", minHeight: "400px", display: "flex", flexDirection: "column", alignItems: "center", animation: 'slideUp 0.3s ease' }}>
+        <div className="absolute top-0 right-0 w-32 h-32 bg-[#ffb703] rounded-full mix-blend-overlay filter blur-3xl opacity-20 animate-pulse" />
+        <div className="absolute bottom-0 left-0 w-32 h-32 bg-[#00f5d4] rounded-full mix-blend-overlay filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '2s' }} />
+        
         <QuestionRenderer
           question={q}
           onAnswer={handleAnswer}

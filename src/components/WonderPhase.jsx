@@ -91,7 +91,7 @@ const FLOAT_SQUARES = Array.from({ length: 18 }, (_, i) => {
   };
 });
 
-export default function WonderPhase({ onComplete, audioEnabled }) {
+export default function WonderPhase({ onComplete, onBack, audioEnabled }) {
   const [stage, setStage] = useState(0);
   const [particles, setParticles] = useState([]);
 
@@ -160,17 +160,21 @@ export default function WonderPhase({ onComplete, audioEnabled }) {
       </div>
 
       <div className="wonder-content">
-        <div className={`wonder-question-card ${stage >= 1 ? 'visible' : ''}`}>
+        <div className={`wonder-question-card ${stage >= 1 ? 'visible' : ''}`} style={{ maxWidth: '800px', margin: '0 auto', padding: '40px' }}>
           <SquareHero />
-          <h2 className="wonder-question-text">{WONDER.question}</h2>
-          <p className="wonder-subtext">{WONDER.subtext}</p>
+          <h2 className="wonder-question-text" style={{ fontSize: '1.8rem', lineHeight: '1.5', color: '#fff', textAlign: 'center' }}>{WONDER.question}</h2>
+          <p className="wonder-subtext" style={{ textAlign: 'center' }}>{WONDER.subtext}</p>
         </div>
 
-        <button className={`btn btn-wonder ${stage >= 2 ? 'visible' : ''}`} onClick={handleDiscover} id="discover-btn">
-          <span className="wonder-btn-sparkle">✨</span>
-          Let's Discover!
-          <span className="wonder-btn-sparkle">✨</span>
+        <button className={`btn btn-wonder ${stage >= 2 ? 'visible' : ''}`} onClick={handleDiscover} id="discover-btn" style={{ marginTop: '30px' }}>
+          <span className="wonder-btn-sparkle">📖</span>
+          Explore Area Stories →
         </button>
+        <div style={{ marginTop: '30px' }}>
+          <button onClick={() => { stopNarration(); onBack(); }} className="btn btn-outline" style={{ background: 'rgba(255,255,255,0.1)' }}>
+            ← Back
+          </button>
+        </div>
       </div>
     </div>
   );

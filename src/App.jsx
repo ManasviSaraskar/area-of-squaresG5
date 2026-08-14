@@ -1,4 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Volume2, VolumeX } from 'lucide-react';
 import { stopNarration } from './utils/audio';
 import IntroScreen from './components/IntroScreen';
 import WonderPhase from './components/WonderPhase';
@@ -9,12 +11,19 @@ import ReflectPhase from './components/ReflectPhase';
 
 const PHASES = ['intro', 'wonder', 'story', 'simulate', 'play', 'reflect'];
 const JOURNEY_ITEMS = [
-  { icon: '🤔', label: 'Wonder' },
-  { icon: '📖', label: 'Story' },
-  { icon: '🎮', label: 'Simulate' },
-  { icon: '🎯', label: 'Play' },
-  { icon: '✨', label: 'Reflect' },
+  { id: 'wonder', icon: '🔍', label: 'Wonder' },
+  { id: 'story', icon: '📖', label: 'Story' },
+  { id: 'simulate', icon: '🧪', label: 'Simulate' },
+  { id: 'play', icon: '🎮', label: 'Practice' },
+  { id: 'reflect', icon: '📓', label: 'Reflect' },
 ];
+
+// Page transition variants — matching reffolder style
+const pageVariants = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.35, ease: 'easeOut' } },
+  exit:    { opacity: 0, y: -20, transition: { duration: 0.25, ease: 'easeIn' } },
+};
 
 export default function App() {
   const [phase, setPhase] = useState('intro');
@@ -58,15 +67,25 @@ export default function App() {
 
   return (
     <>
+      {/* Floating background elements */}
+      <div className="floating-numbers">
+        <div className="floating-number" style={{ top: '10%', left: '8%', animationDelay: '0s' }}>📐</div>
+        <div className="floating-number" style={{ top: '25%', right: '12%', animationDelay: '3s' }}>🟦</div>
+        <div className="floating-number" style={{ bottom: '30%', left: '15%', animationDelay: '6s' }}>✖️</div>
+        <div className="floating-number" style={{ bottom: '15%', right: '8%', animationDelay: '9s' }}>🔢</div>
+      </div>
+
       <div className="app-container">
-        {/* Audio Toggle — top-right */}
+        {/* Audio Mute Button — lucide icons like reffolder */}
         <button
-          className="audio-toggle-btn"
           onClick={toggleAudio}
-          title={audioEnabled ? 'Mute audio' : 'Unmute audio'}
+          className="audio-toggle-btn"
           aria-label={audioEnabled ? 'Mute audio' : 'Unmute audio'}
+          title={audioEnabled ? 'Mute audio' : 'Unmute audio'}
         >
-          {audioEnabled ? '🔊' : '🔇'}
+          {audioEnabled
+            ? <Volume2 className="w-6 h-6 text-white" />
+            : <VolumeX className="w-6 h-6 text-red-400" />}
         </button>
 
         {/* Home Button */}
@@ -76,18 +95,18 @@ export default function App() {
           </button>
         )}
 
-        {/* Journey Progress Bar */}
+        {/* Journey Progress Bar — reffolder style */}
         {showJourney && (
           <div className="journey-bar" role="navigation" aria-label="Learning journey progress">
             {JOURNEY_ITEMS.map((item, i) => {
               const stepPhaseIndex = i + 1;
               const isActive = phaseIndex === stepPhaseIndex;
-              const isCompleted = phaseIndex > stepPhaseIndex;
+              const isPast = phaseIndex > stepPhaseIndex;
               return (
                 <div key={i} className="journey-step-wrapper" style={{ display: 'flex', alignItems: 'center' }}>
-                  <div className={`journey-step ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}`}>
+                  <div className={`journey-step ${isActive ? 'active' : ''} ${isPast ? 'completed' : ''}`}>
                     <div className="journey-step-dot">
-                      {isCompleted ? '✔' : item.icon}
+                      {isPast ? '✓' : item.icon}
                     </div>
                     <div className="journey-step-label">{item.label}</div>
                   </div>
@@ -100,46 +119,65 @@ export default function App() {
           </div>
         )}
 
-        {/* Phase Content */}
-        {phase === 'intro' && (
-          <IntroScreen
-            onStart={() => setPhase('wonder')}
-            audioEnabled={audioEnabled}
-            onToggleAudio={toggleAudio}
-          />
-        )}
-        {phase === 'wonder' && (
-          <WonderPhase
-            onComplete={() => setPhase('story')}
-            audioEnabled={audioEnabled}
-          />
-        )}
-        {phase === 'story' && (
-          <StoryPhase
-            onComplete={() => setPhase('simulate')}
-            audioEnabled={audioEnabled}
-          />
-        )}
-        {phase === 'simulate' && (
-          <SimulatePhase
-            onComplete={() => setPhase('play')}
-            audioEnabled={audioEnabled}
-          />
-        )}
-        {phase === 'play' && (
-          <PlayPhase
-            onComplete={(stats) => { setPlayStats(stats); setPhase('reflect'); }}
-            audioEnabled={audioEnabled}
-          />
-        )}
-        {phase === 'reflect' && (
-          <ReflectPhase
-            stats={playStats}
-            onRestart={restart}
-            onGoHome={confirmHome}
-            audioEnabled={audioEnabled}
-          />
-        )}
+        {/* Phase Content — AnimatePresence for smooth transitions */}
+        <AnimatePresence mode="wait">
+          {phase === 'intro' && (
+            <motion.div key="intro" {...pageVariants} style={{ width: '100%' }}>
+              <IntroScreen
+                onStart={() => setPhase('wonder')}
+                audioEnabled={audioEnabled}
+                onToggleAudio={toggleAudio}
+              />
+            </motion.div>
+          )}
+          {phase === 'wonder' && (
+            <motion.div key="wonder" {...pageVariants} style={{ width: '100%' }}>
+              <WonderPhase
+                onComplete={() => setPhase('story')}
+                onBack={() => setPhase('intro')}
+                audioEnabled={audioEnabled}
+              />
+            </motion.div>
+          )}
+          {phase === 'story' && (
+            <motion.div key="story" {...pageVariants} style={{ width: '100%' }}>
+              <StoryPhase
+                onComplete={() => setPhase('simulate')}
+                onBack={() => setPhase('wonder')}
+                audioEnabled={audioEnabled}
+              />
+            </motion.div>
+          )}
+          {phase === 'simulate' && (
+            <motion.div key="simulate" {...pageVariants} style={{ width: '100%' }}>
+              <SimulatePhase
+                onComplete={() => setPhase('play')}
+                onBack={() => setPhase('story')}
+                audioEnabled={audioEnabled}
+              />
+            </motion.div>
+          )}
+          {phase === 'play' && (
+            <motion.div key="play" {...pageVariants} style={{ width: '100%' }}>
+              <PlayPhase
+                onComplete={(stats) => { setPlayStats(stats); setPhase('reflect'); }}
+                onBack={() => setPhase('simulate')}
+                audioEnabled={audioEnabled}
+              />
+            </motion.div>
+          )}
+          {phase === 'reflect' && (
+            <motion.div key="reflect" {...pageVariants} style={{ width: '100%' }}>
+              <ReflectPhase
+                stats={playStats}
+                onRestart={restart}
+                onGoHome={confirmHome}
+                onBack={() => setPhase('play')}
+                audioEnabled={audioEnabled}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Exit Confirm Modal */}

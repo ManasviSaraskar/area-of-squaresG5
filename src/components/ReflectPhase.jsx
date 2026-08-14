@@ -49,7 +49,7 @@ export default function ReflectPhase({ stats, onRestart, onGoHome, audioEnabled 
   }, [showConfetti]);
 
   return (
-    <div className="reflect-phase">
+    <div className="reflect-phase w-full flex flex-col items-center">
       {/* Confetti */}
       {showConfetti && (
         <div className="confetti-container" aria-hidden="true">
@@ -68,7 +68,7 @@ export default function ReflectPhase({ stats, onRestart, onGoHome, audioEnabled 
       )}
 
       {/* Certificate */}
-      <div className="certificate-card">
+      <div className="glass-card shadow-2xl relative" style={{ width: "100%", maxWidth: "800px", padding: "40px", borderRadius: "32px", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", animation: 'slideUp 0.3s ease' }}>
         <div className="cert-badge">🏆</div>
         <h2 className="cert-title">Journey Complete!</h2>
         <p className="cert-subtitle">
@@ -147,21 +147,20 @@ export default function ReflectPhase({ stats, onRestart, onGoHome, audioEnabled 
           <div className="speech-bubble">{mascotMessage}</div>
         </div>
 
-        {/* Actions */}
-        <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center', marginTop: 24 }}>
+        <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center', marginTop: 32 }}>
           <button
-            className="btn btn-primary btn-lg"
+            className="btn btn-primary text-xl px-10 py-4"
             onClick={() => { stopNarration(); onRestart(); }}
             id="play-again-btn"
           >
-            🔄 Play Again
+            Play Again 🔄
           </button>
           <button
-            className="btn btn-secondary"
+            className="btn btn-outline text-xl px-10 py-4"
             onClick={() => { stopNarration(); onGoHome(); }}
             id="go-home-btn"
           >
-            🏠 Home
+            Home 🏠
           </button>
         </div>
       </div>

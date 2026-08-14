@@ -2,11 +2,11 @@ import { useEffect } from 'react';
 import { stopNarration } from '../utils/audio';
 
 const JOURNEY_PHASES = [
-  { icon: '🤔', label: 'Wonder', desc: 'An area mystery awaits!' },
+  { icon: '🔍', label: 'Wonder', desc: 'An area mystery awaits!' },
   { icon: '📖', label: 'Story', desc: 'See area in real life' },
-  { icon: '🎮', label: 'Simulate', desc: 'Build & calculate' },
-  { icon: '🎯', label: 'Play', desc: '21 gamified challenges' },
-  { icon: '✨', label: 'Reflect', desc: 'What did you learn?' },
+  { icon: '🧪', label: 'Simulate', desc: 'Build & calculate' },
+  { icon: '🎮', label: 'Practice', desc: '21 gamified challenges' },
+  { icon: '📓', label: 'Reflect', desc: 'What did you learn?' },
 ];
 
 const FEATURE_CARDS = [
